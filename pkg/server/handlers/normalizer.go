@@ -9,19 +9,30 @@ import (
 )
 
 func WidgetValidator(request *types.APIRequest, schema *types.APISchema, data types.APIObject) error {
-	if request.Method == http.MethodPost {
+	if request.Method == http.MethodPost || request.Method == http.MethodPut {
 		dataMap := data.Data()
 		profile, _ := dataMap["profile"].(string)
+
 		if profile != "production" && profile != "staging" {
-			return apierror.NewAPIError(validation.InvalidBodyContent, "Field 'profile' must be 'production' or 'staging'")
+			return apierror.NewAPIError(
+				validation.InvalidBodyContent,
+				"Field 'profile' must be 'production' or 'staging'",
+			)
 		}
 	}
+
 	return nil
 }
 
 func WidgetFormatter(request *types.APIRequest, resource *types.RawResource) {
-	resource.Links["reconcile"] = request.URLBuilder.ResourceLink(resource.Schema, resource.ID) + "/reconcile"
-	
+	resource.Links["reconcile"] = request.URLBuilder.ResourceLink(
+		resource.Schema,
+		resource.ID,
+	) + "/reconcile"
+
 	dataMap := resource.APIObject.Data()
 	dataMap["managedBy"] = "suse-rancher-apiserver-playground"
+
+	// Explicitly assign the modified data back to the API object.
+	resource.APIObject.Object = dataMap
 }

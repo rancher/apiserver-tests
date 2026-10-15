@@ -45,7 +45,11 @@ func (e *MemoryStore) List(apiOp *types.APIRequest, schema *types.APISchema) (ty
 	return list, nil
 }
 
-func (e *MemoryStore) Create(apiOp *types.APIRequest, schema *types.APISchema, data types.APIObject) (types.APIObject, error) {
+func (e *MemoryStore) Create(
+	apiOp *types.APIRequest,
+	schema *types.APISchema,
+	data types.APIObject,
+) (types.APIObject, error) {
 	if err := handlers.WidgetValidator(apiOp, schema, data); err != nil {
 		return types.APIObject{}, err
 	}
@@ -56,7 +60,18 @@ func (e *MemoryStore) Create(apiOp *types.APIRequest, schema *types.APISchema, d
 	dataMap := data.Data()
 	name, _ := dataMap["name"].(string)
 	if name == "" {
-		return types.APIObject{}, apierror.NewAPIError(validation.MissingRequired, "Resource name is mandatory")
+		return types.APIObject{}, apierror.NewAPIError(
+			validation.MissingRequired,
+			"Resource name is mandatory",
+		)
+	}
+
+	// Reject duplicate names instead of overwriting existing resources.
+	if _, exists := e.items[name]; exists {
+		return types.APIObject{}, apierror.NewAPIError(
+			validation.Conflict,
+			"Widget already exists",
+		)
 	}
 
 	obj := types.APIObject{
@@ -64,13 +79,19 @@ func (e *MemoryStore) Create(apiOp *types.APIRequest, schema *types.APISchema, d
 		Type:   "widget",
 		Object: dataMap,
 	}
-	e.items[name] = obj
 
+	e.items[name] = obj
 	e.broadcast(types.APIEvent{Name: "change", Object: obj})
+
 	return obj, nil
 }
 
 func (e *MemoryStore) Update(apiOp *types.APIRequest, schema *types.APISchema, data types.APIObject, id string) (types.APIObject, error) {
+	// Validate the incoming update before changing stored data.
+	if err := handlers.WidgetValidator(apiOp, schema, data); err != nil {
+		return types.APIObject{}, err
+	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -85,6 +106,7 @@ func (e *MemoryStore) Update(apiOp *types.APIRequest, schema *types.APISchema, d
 	}
 	e.items[id] = obj
 	e.broadcast(types.APIEvent{Name: "change", Object: obj})
+
 	return obj, nil
 }
 
