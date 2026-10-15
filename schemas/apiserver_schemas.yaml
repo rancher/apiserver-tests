@@ -1,0 +1,39 @@
+- projects:
+    - RM
+  suite: Go Automation/Apiserver
+  cases:
+    - title: TestRESTValidationAndFormatting
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestWidgetCRUDLifecycle
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Create_valid_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Get_existing_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Delete_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Verify_widget_deleted
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestStreamingEventSubscription
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2

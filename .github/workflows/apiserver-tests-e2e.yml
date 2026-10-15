@@ -1,9 +1,6 @@
 name: Apiserver Integration Tests
 
 on:
-  pull_request:
-    branches:
-      - diamond/apiserver-mvp
   workflow_dispatch:
     inputs:
       apiserver_version:
@@ -36,8 +33,7 @@ jobs:
 
       - name: Set apiserver version in apiserver-tests go.mod
         env:
-          # APISERVER_VERSION: "${{ inputs.apiserver_version }}"
-          APISERVER_VERSION: "v0.8.8"
+          APISERVER_VERSION: "${{ inputs.apiserver_version }}"
         run: |
           set -euo pipefail
 
@@ -78,113 +74,112 @@ jobs:
       - name: Install gotestsum
         run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
-      # - name: Format Qase milestone
-      #   id: qase_milestone
-      #   if: inputs.qase_test_run_id == ''
-      #   env:
-      #     APISERVER_VERSION: ${{ inputs.apiserver_version }}
-      #   run: |
-      #     set -euo pipefail
+      - name: Format Qase milestone
+        id: qase_milestone
+        if: inputs.qase_test_run_id == ''
+        env:
+          APISERVER_VERSION: ${{ inputs.apiserver_version }}
+        run: |
+          set -euo pipefail
 
-      #     version="${APISERVER_VERSION}"
-      #     base="${version%%-*}"
+          version="${APISERVER_VERSION}"
+          base="${version%%-*}"
 
-      #     echo "Apiserver version: ${version}"
-      #     echo "Qase milestone: ${base}"
+          echo "Apiserver version: ${version}"
+          echo "Qase milestone: ${base}"
 
-      #     echo "version=${base}" >> "$GITHUB_OUTPUT"
+          echo "version=${base}" >> "$GITHUB_OUTPUT"
 
-      # - name: Verify Qase milestone exists
-      #   id: verify-qase-milestone
-      #   if: inputs.qase_test_run_id == ''
-      #   env:
-      #     QASE_PROJECT_ID: ${{ secrets.QASE_PROJECT_ID }}
-      #     QASE_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
-      #     MILESTONE: ${{ steps.qase_milestone.outputs.version }}
-      #   run: |
-      #     set -euo pipefail
+      - name: Verify Qase milestone exists
+        id: verify-qase-milestone
+        if: inputs.qase_test_run_id == ''
+        env:
+          QASE_PROJECT_ID: ${{ secrets.QASE_PROJECT_ID }}
+          QASE_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
+          MILESTONE: ${{ steps.qase_milestone.outputs.version }}
+        run: |
+          set -euo pipefail
 
-      #     echo "Checking for Qase milestone: ${MILESTONE}"
+          echo "Checking for Qase milestone: ${MILESTONE}"
 
-      #     MILESTONE_RESPONSE=$(curl -sS -G \
-      #       -H "Content-Type: application/json" \
-      #       -H "Token: ${QASE_TOKEN}" \
-      #       --data-urlencode "search=${MILESTONE}" \
-      #       --data-urlencode "limit=100" \
-      #       "https://api.qase.io/v1/milestone/${QASE_PROJECT_ID}")
+          MILESTONE_RESPONSE=$(curl -sS -G \
+            -H "Content-Type: application/json" \
+            -H "Token: ${QASE_TOKEN}" \
+            --data-urlencode "search=${MILESTONE}" \
+            --data-urlencode "limit=100" \
+            "https://api.qase.io/v1/milestone/${QASE_PROJECT_ID}")
 
-      #     MILESTONE_ID=$(echo "$MILESTONE_RESPONSE" |
-      #       jq -r --arg title "$MILESTONE" \
-      #       '.result.entities[]? | select(.title == $title) | .id' |
-      #       head -n 1)
+          MILESTONE_ID=$(echo "$MILESTONE_RESPONSE" |
+            jq -r --arg title "$MILESTONE" \
+            '.result.entities[]? | select(.title == $title) | .id' |
+            head -n 1)
 
-      #     if [ -n "$MILESTONE_ID" ] && [ "$MILESTONE_ID" != "null" ]; then
-      #       echo "Qase milestone already exists:"
-      #       echo "  Title: ${MILESTONE}"
-      #       echo "  ID: ${MILESTONE_ID}"
-      #     else
-      #       echo "Qase milestone '${MILESTONE}' does not exist. Creating it."
+          if [ -n "$MILESTONE_ID" ] && [ "$MILESTONE_ID" != "null" ]; then
+            echo "Qase milestone already exists:"
+            echo "  Title: ${MILESTONE}"
+            echo "  ID: ${MILESTONE_ID}"
+          else
+            echo "Qase milestone '${MILESTONE}' does not exist. Creating it."
 
-      #       CREATE_RESPONSE=$(curl -sS -X POST \
-      #         -H "Content-Type: application/json" \
-      #         -H "Token: ${QASE_TOKEN}" \
-      #         -H "Accept: application/json" \
-      #         -d "$(jq -n --arg title "$MILESTONE" \
-      #           '{title: $title}')" \
-      #         "https://api.qase.io/v1/milestone/${QASE_PROJECT_ID}")
+            CREATE_RESPONSE=$(curl -sS -X POST \
+              -H "Content-Type: application/json" \
+              -H "Token: ${QASE_TOKEN}" \
+              -H "Accept: application/json" \
+              -d "$(jq -n --arg title "$MILESTONE" \
+                '{title: $title}')" \
+              "https://api.qase.io/v1/milestone/${QASE_PROJECT_ID}")
 
-      #       MILESTONE_ID=$(echo "$CREATE_RESPONSE" |
-      #         jq -r '.result.id')
+            MILESTONE_ID=$(echo "$CREATE_RESPONSE" |
+              jq -r '.result.id')
 
-      #       if [ -z "$MILESTONE_ID" ] || [ "$MILESTONE_ID" = "null" ]; then
-      #         echo "::error::Failed to create Qase milestone '${MILESTONE}'"
-      #         echo "$CREATE_RESPONSE"
-      #         exit 1
-      #       fi
+            if [ -z "$MILESTONE_ID" ] || [ "$MILESTONE_ID" = "null" ]; then
+              echo "::error::Failed to create Qase milestone '${MILESTONE}'"
+              echo "$CREATE_RESPONSE"
+              exit 1
+            fi
 
-      #       echo "Created Qase milestone:"
-      #       echo "  Title: ${MILESTONE}"
-      #       echo "  ID: ${MILESTONE_ID}"
-      #     fi
+            echo "Created Qase milestone:"
+            echo "  Title: ${MILESTONE}"
+            echo "  ID: ${MILESTONE_ID}"
+          fi
 
-      #     echo "milestone=${MILESTONE}" >> "$GITHUB_OUTPUT"
+          echo "milestone=${MILESTONE}" >> "$GITHUB_OUTPUT"
 
-      # - name: Create Qase test run
-      #   id: create-qase-run
-      #   if: inputs.qase_test_run_id == ''
-      #   uses: ./.github/actions/create-qase-test-run
-      #   with:
-      #     test_run_name: "Apiserver_Tests - ${{ inputs.apiserver_version }}"
-      #     qase_project_id: ${{ secrets.QASE_PROJECT_ID }}
-      #     qase_token: ${{ secrets.QASE_AUTOMATION_TOKEN }}
-      #     qase_milestone: ${{ steps.verify-qase-milestone.outputs.milestone }}
+      - name: Create Qase test run
+        id: create-qase-run
+        if: inputs.qase_test_run_id == ''
+        uses: ./.github/actions/create-qase-test-run
+        with:
+          test_run_name: "Apiserver_Tests - ${{ inputs.apiserver_version }}"
+          qase_project_id: ${{ secrets.QASE_PROJECT_ID }}
+          qase_token: ${{ secrets.QASE_AUTOMATION_TOKEN }}
+          qase_milestone: ${{ steps.verify-qase-milestone.outputs.milestone }}
 
-      # - name: Resolve Qase test run ID
-      #   id: qase-run
-      #   env:
-      #     PROVIDED_RUN_ID: ${{ inputs.qase_test_run_id }}
-      #     CREATED_RUN_ID: ${{ steps.create-qase-run.outputs.id }}
-      #   run: |
-      #     set -euo pipefail
-      #     run_id="${PROVIDED_RUN_ID:-$CREATED_RUN_ID}"
+      - name: Resolve Qase test run ID
+        id: qase-run
+        env:
+          PROVIDED_RUN_ID: ${{ inputs.qase_test_run_id }}
+          CREATED_RUN_ID: ${{ steps.create-qase-run.outputs.id }}
+        run: |
+          set -euo pipefail
+          run_id="${PROVIDED_RUN_ID:-$CREATED_RUN_ID}"
 
-      #     if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
-      #       echo "::error::Qase test run ID must be numeric."
-      #       exit 1
-      #     fi
+          if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "::error::Qase test run ID must be numeric."
+            exit 1
+          fi
 
-      #     echo "id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "id=$run_id" >> "$GITHUB_OUTPUT"
 
       - name: Run apiserver integration suite and report to Qase
         uses: ./.github/actions/run-test-suite
-        # env:
-        #   QASE_TEST_RUN_ID: ${{ steps.qase-run.outputs.id }}
-        #   QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
-        #   QASE_PROJECT_ID: ${{ secrets.QASE_PROJECT_ID }}
+        env:
+          QASE_TEST_RUN_ID: ${{ steps.qase-run.outputs.id }}
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
+          QASE_PROJECT_ID: ${{ secrets.QASE_PROJECT_ID }}
         with:
           package: "integration"
-          # reporting: "true"
-          reporting: "false"
+          reporting: "true"
           tag: "validation"
           test-suite: ".*"
           timeout: "30m"
