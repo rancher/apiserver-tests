@@ -18,7 +18,7 @@ concurrency:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   S3_BUCKET: ${{ secrets.APISERVER_TAGS_S3_BUCKET }}
-  SUPPORTED_MINORS: "0.8 0.9 0.10"
+  SUPPORTED_MINORS: "0.9 0.10"
 
 jobs:
   check-apiserver-tags:
