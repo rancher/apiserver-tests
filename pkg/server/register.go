@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/rancher/apiserver-tests/pkg/server/handlers"
 	"github.com/rancher/apiserver-tests/pkg/store/engine"
 	"github.com/rancher/apiserver/pkg/server"
 	"github.com/rancher/apiserver/pkg/store/apiroot"
@@ -17,39 +18,61 @@ type Widget struct {
 }
 
 func BuildAPIHandler() (http.Handler, error) {
+	return BuildAPIHandlerWithAccessControl(nil)
+}
+
+func BuildAPIHandlerWithAccessControl(
+	accessControl types.AccessControl,
+) (http.Handler, error) {
 	s := server.DefaultAPIServer()
 
-	// Establish the API base root routing namespace
+	// Allow tests to inject a custom access-control policy.
+	// A nil value preserves the default schema-based policy.
+	if accessControl != nil {
+		s.AccessControl = accessControl
+	}
+
+	// Establish the API base root routing namespace.
 	apiroot.Register(s.Schemas, []string{"v1"})
 
 	// Register watch endpoints.
-	// Passing 'nil' tells the framework to use the default schema group.
+	// Passing nil tells the framework to use the default schema group.
 	subscribe.Register(s.Schemas, nil, "v1")
 
-	// Create a shared in-memory store for the "widget" resource.
+	// Create a shared in-memory store for the widget resource.
 	sharedStorage := engine.NewMemoryStore()
 
-	// Import the struct and customize the schema definitions
+	// Import the struct and customize its API schema.
 	s.Schemas.MustImportAndCustomize(Widget{}, func(schema *types.APISchema) {
 		schema.Store = sharedStorage
-		schema.CollectionMethods = []string{http.MethodGet, http.MethodPost}
-		schema.ResourceMethods = []string{http.MethodGet, http.MethodDelete, http.MethodPut}
+		schema.CollectionMethods = []string{
+			http.MethodGet,
+			http.MethodPost,
+		}
+		schema.ResourceMethods = []string{
+			http.MethodGet,
+			http.MethodDelete,
+			http.MethodPut,
+		}
+
+		// Apply custom resource formatting to API responses.
+		schema.Formatter = handlers.WidgetFormatter
 
 		if schema.Schema == nil {
 			schema.Schema = &schemas.Schema{}
 		}
+
 		schema.Schema.ID = "widget"
 		schema.Schema.PluralName = "widgets"
 	})
 
-	// Create router multiplexer using standard wildcards.
-	// This matches the rancher/apiserver architectural pattern.
+	// Route API requests through the server.
 	mux := http.NewServeMux()
-	
-	// Both /v1/widgets AND /v1/subscribe will hit this route.
-	// For /v1/widgets:   prefix="v1", type="widgets"
-	// For /v1/subscribe: prefix="v1", type="subscribe"
+
+	// /v1/widgets and /v1/subscribe
 	mux.Handle("/{prefix}/{type}", s)
+
+	// /v1/widgets/{name}
 	mux.Handle("/{prefix}/{type}/{name}", s)
 
 	return AuditLoggingMiddleware(mux), nil
