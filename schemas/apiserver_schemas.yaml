@@ -2,11 +2,96 @@
     - RM
   suite: Go Automation/Apiserver
   cases:
+    - title: TestAccessControlDeniesCollectionOperations
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: list_allowed_when_create_is_denied
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: create_denied_without_creating_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
+    - title: TestAccessControlDeniesResourceMutations
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: update_denied_without_changing_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: delete_denied_without_deleting_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
     - title: TestRESTValidationAndFormatting
       priority: 4
       type: 8
       is_flaky: 0
       automation: 2
+    - title: reject_invalid_profile
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: reject_missing_profile
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: reject_malformed_JSON
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: accept_production_profile_and_format_response
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: accept_staging_profile_and_format_response
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
+    - title: TestPUTRejectsInvalidProfile
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: create_valid_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: reject_invalid_profile_update
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: preserve_original_profile
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
+    - title: TestPUTRejectsMalformedJSONWithoutMutation
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
     - title: TestWidgetCRUDLifecycle
       priority: 4
       type: 8
@@ -22,6 +107,26 @@
       type: 8
       is_flaky: 0
       automation: 2
+    - title: Update_widget_profile
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Verify_updated_widget_persists
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Update_nonexistent_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: Verify_failed_update_did_not_create_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
     - title: Delete_widget
       priority: 4
       type: 8
@@ -32,7 +137,101 @@
       type: 8
       is_flaky: 0
       automation: 2
+
+    - title: TestDuplicateWidgetCreation
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: create_original_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: reject_duplicate_name
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: preserve_original_widget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
+    - title: TestConcurrentDuplicateWidgetCreation
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestConcurrentWidgetUpdateAndDelete
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestConcurrentWidgetUpdates
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
+    - title: TestWidgetCollection
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestUnsupportedMethodDoesNotMutateWidget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestEmptyWidgetCollection
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestWidgetCollectionIgnoresUnknownQueryParameters
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestGetNonexistentWidget
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+
     - title: TestStreamingEventSubscription
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestMultipleSubscribersReceiveWidgetCreation
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: subscriber_1
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: subscriber_2
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestMultipleSubscribersReceiveWidgetDeletion
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestSubscriberDisconnectDoesNotAffectOtherSubscribers
+      priority: 4
+      type: 8
+      is_flaky: 0
+      automation: 2
+    - title: TestSubscriberCanReconnectAndReceiveEvents
       priority: 4
       type: 8
       is_flaky: 0
